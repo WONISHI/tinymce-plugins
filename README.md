@@ -84,3 +84,9 @@ tinymce.PluginManager.add("echart", function(editor) { ... });
 | `data_echart_grid`    | object | `{}`     | 网格配置                          |
 | `data_echart_legend`  | object | `{}`     | 图例配置                          |
 | `data_echart_tooltip` | object | `{}`     | 提示框配置                        |
+
+### 后续计划
+- 行号校验、错误提示增强
+- 弹窗中实时预览 ECharts 图表
+- 标题、网格、图例、堆叠开关
+- 图表销毁
