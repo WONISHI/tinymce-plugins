@@ -7,15 +7,42 @@
     const data_echart_grid = editor.getParam("data_echart_grid");
     const data_echart_legend = editor.getParam("data_echart_legend");
     const data_echart_tooltip = editor.getParam("data_echart_tooltip");
+    let data_echart_options = null;
+    let data_echart_el = null;
     // 添加右键菜单
     editor.ui.registry.addContextMenu("chartContext", {
       update: () => "insertChart"
     });
 
     editor.ui.registry.addMenuItem("insertChart", {
-      text: "插入图表",
-      onAction: () => openChartDialog()
+      text: "图表",
+      onAction: () => {
+        data_echart_el = editor.dom.getParent(editor.selection.getStart(), "div.custom-chart");
+        if (data_echart_el) {
+          data_echart_options = parseChartDataAttrs(data_echart_el);
+          const id = editor.dom.getAttrib(data_echart_el, "id");
+          console.log("id", id);
+        }
+        openChartDialog(data_echart_el);
+      }
     });
+
+    // 解析参数
+    function parseChartDataAttrs(el) {
+      const data = {};
+      Array.from(el.attributes).forEach(attr => {
+        if (attr.name.startsWith("data-chart-")) {
+          const key = attr.name.replace("data-chart-", "");
+          try {
+            data[key] = JSON.parse(attr.value);
+          } catch (e) {
+            data[key] = attr.value;
+          }
+        }
+      });
+      return data;
+    }
+
     // 封装的nextTick函数
     const nextTick = (function() {
       let callbacks = [];
@@ -51,10 +78,17 @@
         }
       };
     })();
+    loadEcharts();
     // 打开弹窗
-    function openChartDialog() {
+    function openChartDialog(el) {
+      const { type, width, height, x, y } = data_echart_options || { type: "", width: "", height: "", x: [], y: [] };
       editor.windowManager.open({
-        title: "插入图表",
+        title: !data_echart_el ? "插入图表" : "修改图表",
+        initialData: {
+          type: type || "bar",
+          width: String(width),
+          height: String(height)
+        },
         body: {
           type: "panel",
           items: [
@@ -91,15 +125,33 @@
                 </style>
                 <table id="data-input-table" contenteditable="false">
                   <thead>
-                    <tr><th>序号</th><th>X轴</th><th>Y轴</th><th>操作</th></tr>
+                    <tr>
+                      <th>序号</th>
+                      <th>X轴</th>
+                      <th>Y轴</th>
+                      <th>操作</th>
+                    </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td contenteditable="true"></td>
-                      <td contenteditable="true"></td>
-                      <td><button type="button" class="remove-row-btn" title="删除此行">删除</button></td>
-                    </tr>
+                     ${
+                       !x.length
+                         ? `<tr>
+                            <td>1</td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td><button type="button" class="remove-row-btn" title="删除此行">删除</button></td>
+                          </tr>`
+                         : x
+                             .map((val, index) => {
+                               return `<tr>
+                                        <td>${index + 1}</td>
+                                        <td contenteditable="true">${val}</td>
+                                        <td contenteditable="true">${y[index]}</td>
+                                        <td><button type="button" class="remove-row-btn" title="删除此行">删除</button></td>
+                                      </tr>`;
+                             })
+                             .join("")
+                     }
                   </tbody>
                 </table>
                 <button type="button" id="add-row-btn">新增</button>`
@@ -132,14 +184,13 @@
               return;
             }
             // 你的插入逻辑
-            insertChart({
+            insertChart(el, {
               type,
               width: parseInt(width) || 600,
               height: parseInt(height) || 400,
               x,
               y
             });
-
             api.close();
           } catch (e) {
             editor.windowManager.alert("插入失败，请检查数据格式");
@@ -148,7 +199,6 @@
       });
       // 弹窗打开后等待下一事件循环再绑定事件，且从弹窗内部查找
       nextTick(() => {
-        loadEcharts();
         // 找到所有弹窗，取最后一个（最新打开）
         const dialogs = document.querySelectorAll(".tox-dialog");
         if (!dialogs.length) return;
@@ -183,19 +233,41 @@
       });
     }
 
-    function insertChart({ type, width, height, x, y }) {
-      const id = "chart-" + Date.now();
-      editor.insertContent(
-        `<p></p><div class="custom-chart" data-chart-type="${type}" data-chart-x='${JSON.stringify(x)}' data-chart-y='${JSON.stringify(
-          y
-        )}' data-chart-width="${width}" data-chart-height="${height}" id="${id}" style="width:${width}px;height:${height}px;border:1px dashed #ccc;"></div><p></p>`
-      );
+    function insertChart(el, { type, width, height, x, y }) {
+      let id = null;
+      if (!el) {
+        id = "chart-" + Date.now();
+        editor.insertContent(
+          `<p>
+              <div
+              class="custom-chart"
+              data-chart-type="${type}"
+              data-chart-x='${JSON.stringify(x)}'
+              data-chart-y='${JSON.stringify(y)}'
+              data-chart-width="${width}"
+              data-chart-height="${height}"
+              id="${id}"
+              contenteditable="false"
+              style="width:${width}px;height:${height}px;border:1px dashed #ccc;">
+              </div>
+          </p>`
+        );
+      } else {
+        id = editor.dom.getAttrib(el, "id");
+        editor.dom.setAttrib(el, "data-chart-type", type);
+        editor.dom.setAttrib(el, "data-chart-x", JSON.stringify(x));
+        editor.dom.setAttrib(el, "data-chart-y", JSON.stringify(y));
+        editor.dom.setAttrib(el, "data-chart-width", width);
+        editor.dom.setAttrib(el, "data-chart-height", height);
+        editor.dom.setAttrib(el, "style", `width:${width}px;height:${height}px;border:1px dashed #ccc;`);
+        editor.getBody().querySelectorAll('.mce-offscreen-selection').forEach(el => el.remove());
+      }
       renderChart(id, { type, x, y });
     }
 
     function loadEcharts(callback) {
       if (window.echarts) {
-        callback();
+        callback && callback();
         return;
       }
       const script = document.createElement("script");
