@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECharts图表配置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4A86E8',
+                        secondary: '#FF9900',
+                        neutral: '#f5f5f5',
+                        'neutral-dark': '#999999',
+                        'neutral-light': '#f9f9f9',
+                        'border-color': '#ddd',
+                        'border-light': '#eee',
+                        'title-bg': '#4A86E8',
+                        'button-primary': '#4A86E8',
+                        'button-secondary': '#f5f5f5',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .tab-active {
+                @apply bg-primary text-white;
+            }
+            .tab-inactive {
+                @apply bg-white border border-border-color text-gray-700;
+            }
+            .form-input {
+                @apply border border-border-color rounded-md px-2 py-1 text-sm;
+            }
+            .form-label {
+                @apply text-sm text-gray-600;
+            }
+            .btn {
+                @apply rounded-md px-3 py-1 text-sm cursor-pointer transition-all duration-200;
+            }
+            .btn-primary {
+                @apply bg-button-primary text-white hover:bg-primary/90;
+            }
+            .btn-secondary {
+                @apply bg-button-secondary border border-border-color hover:bg-gray-100;
+            }
+            .config-section {
+                @apply border border-border-light rounded-md bg-neutral-light p-4 mb-3;
+            }
+            .chart-preview {
+                @apply border border-border-light rounded-md bg-white p-4 h-[500px];
+            }
+            .chart-container {
+                @apply bg-gray-50 h-[350px] w-full mt-4 relative;
+            }
+            .legend-item {
+                @apply flex items-center text-xs text-gray-600;
+            }
+            .legend-marker {
+                @apply w-3 h-2 mr-2;
+            }
+            .data-table {
+                @apply w-full border-collapse text-xs;
+            }
+            .data-table th, .data-table td {
+                @apply border border-border-color p-1;
+            }
+            .data-table th {
+                @apply bg-gray-100 text-left;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-inter">
+    <!-- 主容器 -->
+    <div class="w-[1000px] h-[850px] bg-white rounded-md shadow-lg mx-auto my-10 overflow-hidden border border-gray-200">
+        <!-- 标题栏 -->
+        <div class="bg-title-bg h-10 flex items-center justify-between px-4 text-white font-bold">
+            <div>插入ECharts图表</div>
+            <div class="cursor-pointer hover:bg-red-600 rounded-full w-6 h-6 flex items-center justify-center">
+                <i class="fa fa-times"></i>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="p-4 flex flex-col h-[calc(100%-40px)]">
+            <!-- 图表类型选择 -->
+            <div class="flex items-center mb-4">
+                <div class="bg-neutral rounded-l-md border border-border-color h-9 flex items-center px-3 text-sm">
+                    图表类型:
+                </div>
+                <div class="flex">
+                    <button class="btn-primary h-9 w-24 rounded-r-none">柱状图</button>
+                    <button class="btn-secondary h-9 w-24 rounded-r-md">折线图</button>
+                </div>
+            </div>
+            
+            <!-- 配置面板和预览区域 -->
+            <div class="flex h-full">
+                <!-- 配置面板 -->
+                <div class="w-[400px] mr-4 h-full overflow-y-auto">
+                    <div class="config-section">
+                        <h2 class="font-bold text-gray-800 mb-4">图表配置</h2>
+                        
+                        <!-- 标签页切换 -->
+                        <div class="flex mb-4">
+                            <button class="tab-active h-8 px-4 rounded-l-md">数据配置</button>
+                            <button class="tab-inactive h-8 px-4">样式配置</button>
+                            <button class="tab-inactive h-8 px-4 rounded-r-md">高级配置</button>
+                        </div>
+                        
+                        <!-- 数据配置内容 -->
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <label class="form-label w-20">图表标题:</label>
+                                <input type="text" value="销售数据分析" class="form-input flex-1 text-xs text-gray-500">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <label class="form-label w-20">X轴标题:</label>
+                                <input type="text" value="月份" class="form-input flex-1 text-xs text-gray-500">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <label class="form-label w-20">Y轴标题:</label>
+                                <input type="text" value="数值" class="form-input flex-1 text-xs text-gray-500">
+                            </div>
+                            
+                            <!-- 数据表格 -->
+                            <div class="mt-3">
+                                <h3 class="font-bold text-sm mb-2">数据配置</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>X轴标签</th>
+                                                <th>销量</th>
+                                                <th>利润</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" value="一月" class="form-input w-full"></td>
+                                                <td><input type="text" value="320" class="form-input w-full"></td>
+                                                <td><input type="text" value="220" class="form-input w-full"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" value="二月" class="form-input w-full"></td>
+                                                <td><input type="text" value="332" class="form-input w-full"></td>
+                                                <td><input type="text" value="182" class="form-input w-full"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" value="三月" class="form-input w-full"></td>
+                                                <td><input type="text" value="301" class="form-input w-full"></td>
+                                                <td><input type="text" value="191" class="form-input w-full"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" value="四月" class="form-input w-full"></td>
+                                                <td><input type="text" value="334" class="form-input w-full"></td>
+                                                <td><input type="text" value="234" class="form-input w-full"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" value="五月" class="form-input w-full"></td>
+                                                <td><input type="text" value="390" class="form-input w-full"></td>
+                                                <td><input type="text" value="290" class="form-input w-full"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" value="六月" class="form-input w-full"></td>
+                                                <td><input type="text" value="330" class="form-input w-full"></td>
+                                                <td><input type="text" value="330" class="form-input w-full"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="flex justify-between mt-2">
+                                    <button class="btn btn-secondary text-xs flex items-center">
+                                        <i class="fa fa-plus mr-1"></i> 添加行
+                                    </button>
+                                    <button class="btn btn-secondary text-xs flex items-center">
+                                        <i class="fa fa-trash mr-1"></i> 删除选中
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 柱状图特有配置 -->
+                            <div class="bg-blue-50 border border-blue-100 rounded p-2 mt-3">
+                                <h3 class="text-primary font-bold text-sm mb-2">柱状图特定配置</h3>
+                                
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center">
+                                        <label class="form-label w-16 text-xs">柱子宽度:</label>
+                                        <input type="text" value="自适应" class="form-input w-24 text-xs text-gray-500">
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <label class="form-label w-16 text-xs">圆角半径:</label>
+                                        <input type="text" value="2" class="form-input w-16 text-xs text-gray-500">
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <label class="form-label w-16 text-xs">柱间距离:</label>
+                                        <input type="text" value="30%" class="form-input w-24 text-xs text-gray-500">
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <label class="form-label w-16 text-xs">系列间距:</label>
+                                        <input type="text" value="20%" class="form-input w-16 text-xs text-gray-500">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 折线图特有配置 -->
+                            <div class="bg-orange-50 border border-orange-100 rounded p-2 mt-2">
+                                <h3 class="text-secondary font-bold text-sm mb-2">折线图特定配置</h3>
+                                
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center">
+                                        <label class="form-label w-16 text-xs">折线类型:</label>
+                                        <input type="text" value="直线" class="form-input w-32 text-xs text-gray-500">
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <label class="form-label w-8 text-xs">线宽:</label>
+                                        <input type="text" value="2" class="form-input w-16 text-xs text-gray-500">
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <label class="form-label w-24 text-xs flex-shrink-0">显示标记点</label>
+                                        <input type="checkbox" class="w-4 h-4 border border-border-color rounded">
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <label class="form-label w-16 text-xs">标记大小:</label>
+                                        <input type="text" value="4" class="form-input w-16 text-xs text-gray-500">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 预览区域 -->
+                <div class="flex-1 flex flex-col">
+                    <div class="chart-preview">
+                        <h2 class="font-bold text-gray-800 mb-4">图表预览</h2>
+                        
+                        <!-- 图表容器 -->
+                        <div class="chart-container">
+                            <!-- 坐标轴 -->
+                            <div class="absolute bottom-0 left-0 w-full h-full">
+                                <!-- Y轴 -->
+                                <div class="absolute left-0 bottom-0 h-full w-px bg-gray-200"></div>
+                                
+                                <!-- X轴 -->
+                                <div class="absolute left-0 bottom-0 w-full h-px bg-gray-200"></div>
+                                
+                                <!-- Y轴刻度 -->
+                                <div class="absolute left-0 h-full w-full flex flex-col justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-px bg-gray-200"></div>
+                                        <span class="text-xs text-gray-400 -ml-6">500</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-px bg-gray-200"></div>
+                                        <span class="text-xs text-gray-400 -ml-6">300</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-px bg-gray-200"></div>
+                                        <span class="text-xs text-gray-400 -ml-6">100</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- 柱状图数据 -->
+                                <div class="absolute bottom-0 left-0 w-full h-[300px] flex items-end justify-between px-4">
+                                    <!-- 系列1 -->
+                                    <div class="flex space-x-1">
+                                        <div class="w-6 h-[98px] bg-primary rounded-sm"></div>
+                                        <div class="w-6 h-[60px] bg-secondary rounded-sm"></div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <div class="w-6 h-[105px] bg-primary rounded-sm"></div>
+                                        <div class="w-6 h-[40px] bg-secondary rounded-sm"></div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <div class="w-6 h-[90px] bg-primary rounded-sm"></div>
+                                        <div class="w-6 h-[45px] bg-secondary rounded-sm"></div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <div class="w-6 h-[102px] bg-primary rounded-sm"></div>
+                                        <div class="w-6 h-[75px] bg-secondary rounded-sm"></div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <div class="w-6 h-[150px] bg-primary rounded-sm"></div>
+                                        <div class="w-6 h-[145px] bg-secondary rounded-sm"></div>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <div class="w-6 h-[98px] bg-primary rounded-sm"></div>
+                                        <div class="w-6 h-[98px] bg-secondary rounded-sm"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- X轴标签 -->
+                                <div class="absolute bottom-[-20px] left-0 w-full flex justify-between px-4">
+                                    <span class="text-xs text-gray-500">一月</span>
+                                    <span class="text-xs text-gray-500">二月</span>
+                                    <span class="text-xs text-gray-500">三月</span>
+                                    <span class="text-xs text-gray-500">四月</span>
+                                    <span class="text-xs text-gray-500">五月</span>
+                                    <span class="text-xs text-gray-500">六月</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 图例 -->
+                        <div class="flex justify-center mt-4 space-x-6">
+                            <div class="legend-item">
+                                <div class="legend-marker bg-primary"></div>
+                                <span>销量</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-marker bg-secondary"></div>
+                                <span>利润</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 按钮区域 -->
+                    <div class="mt-4 bg-neutral rounded-md border border-border-light h-10 flex items-center justify-between px-4">
+                        <span class="text-xs text-gray-400">配置完成后点击"确定"按钮插入图表</span>
+                        <div class="flex items-center space-x-2">
+                            <button class="w-6 h-6 rounded-full border border-border-color flex items-center justify-center text-gray-500">
+                                <i class="fa fa-question text-xs"></i>
+                            </button>
+                            <button class="btn btn-secondary">取消</button>
+                            <button class="btn btn-primary">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 标签页切换功能
+        document.querySelectorAll('.tab-inactive').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 移除所有标签页的活动状态
+                document.querySelectorAll('.tab-active, .tab-inactive').forEach(t => {
+                    t.classList.remove('tab-active', 'tab-inactive');
+                    t.classList.add('tab-inactive');
+                });
+                
+                // 设置当前标签页为活动状态
+                this.classList.remove('tab-inactive');
+                this.classList.add('tab-active');
+            });
+        });
+        
+        // 图表类型切换功能
+        document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除所有按钮的活动状态
+                document.querySelectorAll('.btn-primary, .btn-secondary').forEach(b => {
+                    b.classList.remove('btn-primary', 'btn-secondary');
+                    b.classList.add('btn-secondary');
+                });
+                
+                // 设置当前按钮为活动状态
+                this.classList.remove('btn-secondary');
+                this.classList.add('btn-primary');
+            });
+        });
+        
+        // 添加行按钮功能
+        document.querySelector('.btn:contains("添加行")').addEventListener('click', function() {
+            const table = document.querySelector('.data-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" class="form-input w-full"></td>
+                <td><input type="text" class="form-input w-full"></td>
+                <td><input type="text" class="form-input w-full"></td>
+            `;
+            table.appendChild(newRow);
+        });
+        
+        // 删除选中行按钮功能
+        document.querySelector('.btn:contains("删除选中")').addEventListener('click', function() {
+            document.querySelectorAll('.data-table tbody tr').forEach(row => {
+                if (row.querySelector('input').checked) {
+                    row.remove();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
