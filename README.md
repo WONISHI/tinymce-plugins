@@ -1,5 +1,7 @@
 ## TinyMCE 图表插件使用说明
 
+访问地址：https://tinymce-plugins.pages.dev/
+
 本插件用于在 TinyMCE 编辑器中插入柱状图或折线图，支持用户通过表单输入图表数据，并在编辑器中渲染图表。
 
 ### 📦 安装与引入
