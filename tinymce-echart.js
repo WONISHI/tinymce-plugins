@@ -19,9 +19,9 @@
       onAction: () => {
         data_echart_el = editor.dom.getParent(editor.selection.getStart(), "div.custom-chart");
         if (data_echart_el) {
+          data_echart_el.setAttribute("tabindex", "-1");
+          editor.getBody().setAttribute("contenteditable", "false");
           data_echart_options = parseChartDataAttrs(data_echart_el);
-          const id = editor.dom.getAttrib(data_echart_el, "id");
-          console.log("id", id);
         }
         openChartDialog(data_echart_el);
       }
@@ -195,6 +195,9 @@
           } catch (e) {
             editor.windowManager.alert("插入失败，请检查数据格式");
           }
+        },
+        oncancel: api => {
+          console.log("api", api);
         }
       });
       // 弹窗打开后等待下一事件循环再绑定事件，且从弹窗内部查找
@@ -260,7 +263,10 @@
         editor.dom.setAttrib(el, "data-chart-width", width);
         editor.dom.setAttrib(el, "data-chart-height", height);
         editor.dom.setAttrib(el, "style", `width:${width}px;height:${height}px;border:1px dashed #ccc;`);
-        editor.getBody().querySelectorAll('.mce-offscreen-selection').forEach(el => el.remove());
+        editor
+          .getBody()
+          .querySelectorAll(".mce-offscreen-selection")
+          .forEach(el => el.remove());
       }
       renderChart(id, { type, x, y });
     }
